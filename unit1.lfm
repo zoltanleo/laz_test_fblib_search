@@ -1,11 +1,12 @@
 object Form1: TForm1
   Left = 336
-  Height = 317
+  Height = 396
   Top = 250
-  Width = 462
+  Width = 578
   Caption = 'Form1'
-  ClientHeight = 317
-  ClientWidth = 462
+  ClientHeight = 396
+  ClientWidth = 578
+  DesignTimePPI = 120
   LCLVersion = '4.99.0.0'
   object Memo1: TMemo
     AnchorSideLeft.Control = Owner
@@ -13,12 +14,12 @@ object Form1: TForm1
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Button1
-    Left = 10
-    Height = 262
-    Top = 10
-    Width = 442
+    Left = 12
+    Height = 328
+    Top = 12
+    Width = 553
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Around = 10
+    BorderSpacing.Around = 12
     Lines.Strings = (
       'Memo1'
     )
@@ -30,12 +31,12 @@ object Form1: TForm1
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 10
-    Height = 25
-    Top = 282
-    Width = 442
+    Left = 12
+    Height = 32
+    Top = 352
+    Width = 553
     Anchors = [akLeft, akRight, akBottom]
-    BorderSpacing.Around = 10
+    BorderSpacing.Around = 12
     Caption = 'Button1'
     TabOrder = 1
     OnClick = Button1Click

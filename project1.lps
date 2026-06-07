@@ -23,13 +23,12 @@
         <UsageCount Value="22"/>
         <IsVisibleTab Value="True"/>
         <TopLine Value="48"/>
-        <CursorPos X="27" Y="64"/>
+        <CursorPos X="23" Y="51"/>
       </Unit>
       <Unit>
         <Filename Value="../../lazarus/laz_gtk2/fpcsrc/rtl/objpas/sysutils/dati.inc"/>
-        <Loaded Value="True"/>
         <UsageCount Value="10"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="930"/>
         <CursorPos X="36" Y="940"/>
       </Unit>
@@ -52,16 +51,16 @@
         <Caret Line="56" Column="54" TopLine="46"/>
       </Position>
       <Position>
-        <Filename Value="../../lazarus/laz_gtk2/fpcsrc/rtl/objpas/sysutils/dati.inc"/>
-        <Caret Line="940" Column="10" TopLine="930"/>
-      </Position>
-      <Position>
         <Filename Value="unit1.pas"/>
         <Caret Line="68" Column="62" TopLine="58"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
         <Caret Line="56" Column="94" TopLine="46"/>
+      </Position>
+      <Position>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="58" Column="25" TopLine="41"/>
       </Position>
     </JumpHistory>
     <RunParams>

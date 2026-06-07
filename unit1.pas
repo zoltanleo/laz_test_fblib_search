@@ -35,14 +35,29 @@ uses
 
 { TForm1 }
 const
-  fnmask = 'libfbclient.so.*';
+  {$IFDEF MSWINDOWS}
+    fnmask = 'fbclient.*';
+  {$ELSE}
+    {$IFDEF CACAO}
+      fnmask = 'libfbclient.so.*';
+    {$ELSE}
+      //fnmask = 'Firebird';
+      fnmask = 'libfbclient.*';
+    {$ENDIF}
+  {$ENDIF}
 
-  path_arr: array[0..3] of string =
+
+
+  path_arr: array[0..7] of string =
     (
     '/opt/firebird/lib',
     '/usr/lib64',
     '/usr/lib',
-    '/usr/lib/x86_64-linux-gnu'
+    '/usr/lib/x86_64-linux-gnu',
+    '/Library/Frameworks/Firebird.framework',
+    'c:\Windows\System32',
+    'c:\Windows\SysWOW64',
+    'd:'
     );
 
 
