@@ -1,0 +1,5 @@
+*.exe
+*.*_
+/release
+/lib
+/debug

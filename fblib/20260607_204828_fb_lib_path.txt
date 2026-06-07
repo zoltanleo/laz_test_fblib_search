@@ -1,0 +1,5 @@
+OS: KDE neon User Edition (x86_64) | Display Server: wayland
+lrwxrwxrwx 1 root root 20 апр 17 13:22 /opt/firebird/lib/libfbclient.so.2 -> libfbclient.so.5.0.4
+lrwxrwxrwx 1 root root 25 мар 31  2024 /usr/lib/x86_64-linux-gnu/firebird/3.0/lib/libfbclient.so.2 -> ../../../libfbclient.so.2
+lrwxrwxrwx 1 root root 34 июн  2 20:02 /usr/lib/x86_64-linux-gnu/libfbclient.so.2 -> /opt/firebird/lib/libfbclient.so.2
+lrwxrwxrwx 1 root root 38 июн  2 20:02 /usr/lib/x86_64-linux-gnu/libfbclient.so.5.0.4 -> /opt/firebird/lib/libfbclient.so.5.0.4

@@ -1,0 +1,4 @@
+OS: Debian GNU/Linux 13 (trixie) (x86_64) | Display Server: x11
+lrwxrwxrwx 1 root root 20 Jul 14  2025 /opt/firebird/lib/libfbclient.so.2 -> libfbclient.so.5.0.3
+lrwxrwxrwx 1 root root 34 Jan 24 14:38 /usr/lib/x86_64-linux-gnu/libfbclient.so.2 -> /opt/firebird/lib/libfbclient.so.2
+lrwxrwxrwx 1 root root 38 Jan 24 14:38 /usr/lib/x86_64-linux-gnu/libfbclient.so.5.0.3 -> /opt/firebird/lib/libfbclient.so.5.0.3

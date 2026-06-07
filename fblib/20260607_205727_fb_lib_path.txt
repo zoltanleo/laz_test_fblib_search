@@ -1,0 +1,4 @@
+OS: Fedora Linux 44 (Workstation Edition) (x86_64) | Display Server: wayland
+lrwxrwxrwx. 1 root root 20 Apr 17 13:22 /opt/firebird/lib/libfbclient.so.2 -> libfbclient.so.5.0.4
+lrwxrwxrwx. 1 root root 34 Jun  1 23:45 /usr/lib64/libfbclient.so.2 -> /opt/firebird/lib/libfbclient.so.2
+lrwxrwxrwx. 1 root root 38 Jun  1 23:45 /usr/lib64/libfbclient.so.5.0.4 -> /opt/firebird/lib/libfbclient.so.5.0.4

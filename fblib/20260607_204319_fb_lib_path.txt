@@ -1,0 +1,4 @@
+OS: Ubuntu 24.04.4 LTS (x86_64) | Display Server: x11
+lrwxrwxrwx 1 root root 20 фев 12  2025 /opt/firebird/lib/libfbclient.so.2 -> libfbclient.so.5.0.2
+lrwxrwxrwx 1 root root 34 апр 27  2025 /usr/lib/x86_64-linux-gnu/libfbclient.so.2 -> /opt/firebird/lib/libfbclient.so.2
+lrwxrwxrwx 1 root root 38 апр 27  2025 /usr/lib/x86_64-linux-gnu/libfbclient.so.5.0.2 -> /opt/firebird/lib/libfbclient.so.5.0.2
