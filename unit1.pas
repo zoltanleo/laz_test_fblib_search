@@ -36,13 +36,12 @@ uses
 { TForm1 }
 const
   {$IFDEF MSWINDOWS}
-    fnmask = 'fbclient.*';
+  fnmasks: array[0..1] of string = ('fbclient.*','gds*.dll');
   {$ELSE}
     {$IFDEF CACAO}
-      fnmask = 'libfbclient.so.*';
+      fnmasks: array[0..0] of string = ('libfbclient.so.*');
     {$ELSE}
-      //fnmask = 'Firebird';
-      fnmask = 'libfbclient.*';
+      fnmasks: array[0..1] of string = ('Firebird', 'libfbclient.*');
     {$ENDIF}
   {$ENDIF}
 
@@ -65,6 +64,7 @@ procedure TForm1.Button1Click(Sender: TObject);
 var
   i: SizeInt = -1;
   j: SizeInt = -1;
+  k: SizeInt = -1;
   FL: TStringList = nil;
 begin
   FL:= TStringList.Create;
@@ -73,11 +73,12 @@ begin
   try
     for i:= Low(path_arr) to High(path_arr) do
     begin
-      FL.Clear;
-      FindAllFiles(FL,path_arr[i],fnmask);
-      for j := 0 to Pred(FL.Count) do
-        //if (Memo1.Lines.IndexOf(FL.Strings[j]) = 0) then
-          Memo1.Lines.Add(FL.Strings[j]);
+      for k := Low(fnmasks) to High(fnmasks) do
+      begin
+        FL.Clear;
+        FindAllFiles(FL, path_arr[i], fnmasks[k]);
+        for j := 0 to Pred(FL.Count) do Memo1.Lines.Add(FL.Strings[j]);
+      end;
     end;
   finally
     FL.Free;
