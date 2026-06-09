@@ -45,20 +45,41 @@ const
     {$ENDIF}
   {$ENDIF}
 
+  {$IFNDEF MSWINDOWS}
+  PATH_FIREBIRD_LIB   = '/opt/firebird/lib';
+  PATH_USR_LIB64      = '/usr/lib64';
+  PATH_USR_LIB        = '/usr/lib';
+  PATH_USR_LIB_X86    = '/usr/lib/x86_64-linux-gnu';
+  PATH_FRAMEWORKS_FB  = '/Library/Frameworks/Firebird.framework';
+  {$ENDIF}
 
+var
+  path_arr: array of string;
 
-  path_arr: array[0..7] of string =
-    (
-    '/opt/firebird/lib',
-    '/usr/lib64',
-    '/usr/lib',
-    '/usr/lib/x86_64-linux-gnu',
-    '/Library/Frameworks/Firebird.framework',
-    'c:\Windows\System32',
-    'c:\Windows\SysWOW64',
-    'd:'
-    );
-
+{$IFDEF MSWINDOWS}
+procedure FillPaths;
+var
+  SysDrive: string;
+begin
+  SysDrive := GetEnvironmentVariable('SystemDrive');
+  if SysDrive = '' then SysDrive := 'C:';
+  path_arr := [
+    SysDrive + '\Windows\System32',
+    SysDrive + '\Windows\SysWOW64'
+  ];
+end;
+{$ELSE}
+procedure FillPaths;
+begin
+  path_arr := [
+    PATH_FIREBIRD_LIB,
+    PATH_USR_LIB64,
+    PATH_USR_LIB,
+    PATH_USR_LIB_X86,
+    PATH_FRAMEWORKS_FB
+  ];
+end;
+{$ENDIF}
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
@@ -67,6 +88,7 @@ var
   k: SizeInt = -1;
   FL: TStringList = nil;
 begin
+  FillPaths;
   FL:= TStringList.Create;
   Memo1.Clear;
   Memo1.Lines.Add(Format('=== начато: %s ===',[FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy',Now)]));
@@ -76,7 +98,7 @@ begin
       for k := Low(fnmasks) to High(fnmasks) do
       begin
         FL.Clear;
-        FindAllFiles(FL, path_arr[i], fnmasks[k]);
+        FindAllFiles(FL, path_arr[i], fnmasks[k], False);
         for j := 0 to Pred(FL.Count) do Memo1.Lines.Add(FL.Strings[j]);
       end;
     end;
