@@ -8,18 +8,20 @@ object Form1: TForm1
   ClientWidth = 578
   DesignTimePPI = 120
   LCLVersion = '4.99.0.0'
+  OnShow = FormShow
   object Memo1: TMemo
     AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Owner
+    AnchorSideTop.Control = RadioGroup1
+    AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Button1
-    Left = 12
-    Height = 328
-    Top = 12
-    Width = 553
+    Left = 10
+    Height = 255
+    Top = 89
+    Width = 558
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Around = 12
+    BorderSpacing.Around = 10
     Lines.Strings = (
       'Memo1'
     )
@@ -31,14 +33,47 @@ object Form1: TForm1
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 12
+    Left = 10
     Height = 32
-    Top = 352
-    Width = 553
+    Top = 354
+    Width = 558
     Anchors = [akLeft, akRight, akBottom]
-    BorderSpacing.Around = 12
+    BorderSpacing.Around = 10
     Caption = 'Button1'
     TabOrder = 1
     OnClick = Button1Click
+  end
+  object RadioGroup1: TRadioGroup
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 10
+    Height = 69
+    Top = 10
+    Width = 558
+    Anchors = [akTop, akLeft, akRight]
+    AutoFill = True
+    AutoSize = True
+    BorderSpacing.Around = 10
+    Caption = 'RadioGroup1'
+    ChildSizing.LeftRightSpacing = 10
+    ChildSizing.TopBottomSpacing = 10
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 2
+    ClientHeight = 44
+    ClientWidth = 554
+    Columns = 2
+    ItemIndex = 0
+    Items.Strings = (
+      'firebird'
+      'sqlite3'
+    )
+    TabOrder = 2
+    OnClick = RadioGroup1Click
   end
 end

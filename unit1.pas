@@ -5,20 +5,25 @@ unit Unit1;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls;
 
 type
+  TDBType = (dtFirebird, dtSqlite3);
 
   { TForm1 }
 
   TForm1 = class(TForm)
     Button1: TButton;
     Memo1: TMemo;
+    RadioGroup1: TRadioGroup;
     procedure Button1Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure RadioGroup1Click(Sender: TObject);
   private
-
+    FDBType: TDBType;
+    procedure GetLibList(aType: TDBType);
   public
-
+    property DBType: TDBType read FDBType;
   end;
 
 var
@@ -32,79 +37,117 @@ uses
   FileUtil
   ;
 
-
-{ TForm1 }
-const
-  {$IFDEF MSWINDOWS}
-  fnmasks: array[0..1] of string = ('fbclient.*','gds*.dll');
-  {$ELSE}
-    {$IFDEF CACAO}
-      fnmasks: array[0..0] of string = ('libfbclient.so.*');
-    {$ELSE}
-      fnmasks: array[0..1] of string = ('Firebird', 'libfbclient.*');
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFNDEF MSWINDOWS}
-  PATH_FIREBIRD_LIB   = '/opt/firebird/lib';
-  PATH_USR_LIB64      = '/usr/lib64';
-  PATH_USR_LIB        = '/usr/lib';
-  PATH_USR_LIB_X86    = '/usr/lib/x86_64-linux-gnu';
-  PATH_FRAMEWORKS_FB  = '/Library/Frameworks/Firebird.framework';
-  {$ENDIF}
-
-var
-  path_arr: array of string;
+{ Пути поиска по платформам }
 
 {$IFDEF MSWINDOWS}
-procedure FillPaths;
+function GetSearchPaths: TStringArray;
 var
   SysDrive: string;
 begin
   SysDrive := GetEnvironmentVariable('SystemDrive');
   if SysDrive = '' then SysDrive := 'C:';
-  path_arr := [
+  Result := [
     SysDrive + '\Windows\System32',
     SysDrive + '\Windows\SysWOW64'
   ];
 end;
 {$ELSE}
-procedure FillPaths;
+function GetSearchPaths: TStringArray;
 begin
-  path_arr := [
-    PATH_FIREBIRD_LIB,
-    PATH_USR_LIB64,
-    PATH_USR_LIB,
-    PATH_USR_LIB_X86,
-    PATH_FRAMEWORKS_FB
+  Result := [
+    '/opt/firebird/lib',
+    '/usr/lib64',
+    '/usr/lib',
+    '/lib64',
+    '/Library/Frameworks/Firebird.framework'
   ];
 end;
 {$ENDIF}
 
-procedure TForm1.Button1Click(Sender: TObject);
-var
-  i: SizeInt = -1;
-  j: SizeInt = -1;
-  k: SizeInt = -1;
-  FL: TStringList = nil;
+{ Маски файлов по типу БД и платформе }
+
+function GetFileMasks(aType: TDBType): TStringArray;
 begin
-  FillPaths;
-  FL:= TStringList.Create;
-  Memo1.Clear;
-  Memo1.Lines.Add(Format('=== начато: %s ===',[FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy',Now)]));
-  try
-    for i:= Low(path_arr) to High(path_arr) do
-    begin
-      for k := Low(fnmasks) to High(fnmasks) do
+  case aType of
+    dtFirebird:
       begin
-        FL.Clear;
-        FindAllFiles(FL, path_arr[i], fnmasks[k], False);
-        for j := 0 to Pred(FL.Count) do Memo1.Lines.Add(FL.Strings[j]);
+        {$IFDEF MSWINDOWS}
+        Result := ['fbclient.*', 'gds*.dll'];
+        {$ELSE}
+          {$IFDEF LINUX}
+          Result := ['libfbclient.so.*'];
+          {$ELSE}
+          Result := ['Firebird', 'libfbclient.*'];
+          {$ENDIF}
+        {$ENDIF}
       end;
+    dtSqlite3:
+      begin
+        {$IFDEF MSWINDOWS}
+        Result := ['sqlite*.dll'];
+        {$ELSE}
+          {$IFDEF LINUX}
+          Result := ['libsqlite3.*'];
+          {$ELSE}
+          Result := ['libtclsqlite3.*'];
+          {$ENDIF}
+        {$ENDIF}
+      end;
+  end;
+end;
+
+{ TForm1 }
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  RadioGroup1Click(Sender);
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+  //RadioGroup1Click(Sender);
+end;
+
+procedure TForm1.RadioGroup1Click(Sender: TObject);
+begin
+  case RadioGroup1.ItemIndex of
+    0: FDBType:= dtFirebird;
+    else
+      FDBType := dtSqlite3;
+  end;
+  GetLibList(DBType);
+end;
+
+procedure TForm1.GetLibList(aType: TDBType);
+var
+  Paths, Masks: TStringArray;
+  FL: TStringList;
+  i, k: SizeInt;
+begin
+  Paths := GetSearchPaths;
+  Masks := GetFileMasks(aType);
+
+  FL := TStringList.Create;
+  try
+    Memo1.Lines.BeginUpdate;
+    try
+      Memo1.Clear;
+      Memo1.Lines.Add(Format('=== начато: %s ===', [FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy', Now)]));
+
+      for i := Low(Paths) to High(Paths) do
+        for k := Low(Masks) to High(Masks) do
+        begin
+          FL.Clear;
+          FindAllFiles(FL, Paths[i], Masks[k], True);
+          Memo1.Lines.AddStrings(FL);
+        end;
+
+      Memo1.Lines.Add(Format('=== закончено: %s ===', [FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy', Now)]));
+    finally
+      Memo1.Lines.EndUpdate;
     end;
   finally
     FL.Free;
-    Memo1.Lines.Add(Format('=== закончено: %s ===',[FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy',Now)]));
   end;
 end;
 
