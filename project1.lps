@@ -6,7 +6,7 @@
     <Units>
       <Unit>
         <Filename Value="project1.lpr"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="23"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
@@ -20,15 +20,15 @@
         <UnitName Value="Unit1"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
-        <UsageCount Value="27"/>
+        <UsageCount Value="28"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="40"/>
-        <CursorPos X="41" Y="212"/>
+        <TopLine Value="264"/>
+        <CursorPos X="68" Y="273"/>
         <FoldState Value=" TIg1m1 PjRi61P"/>
       </Unit>
       <Unit>
         <Filename Value="../../lazarus/laz_gtk2/fpcsrc/rtl/objpas/sysutils/dati.inc"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="930"/>
         <CursorPos X="36" Y="940"/>

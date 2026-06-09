@@ -267,12 +267,12 @@ begin
     dtFirebird:
       begin
         {$IFDEF MSWINDOWS}
-        Result := ['fbclient.*', 'gds*.dll'];
+        Result := ['fbclient.*', 'gds*.dll', 'ibclient*.dll','ibtogo*.dll'];
         {$ELSE}
           {$IFDEF LINUX}
-          Result := ['libfbclient.so.*'];
+          Result := ['libfbclient.so.*','libgds.so*','libibtogo.so*'];
           {$ELSE}
-          Result := ['Firebird', 'libfbclient.*'];
+          Result := ['Firebird', 'libfbclient.*','libgds*.dylib','libibtogo*.dylib'];
           {$ENDIF}
         {$ENDIF}
       end;
