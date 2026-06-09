@@ -42,7 +42,6 @@ uses
 
 {$IFDEF MSWINDOWS}
 
-{ ADDED: функция определения битности библиотеки по PE-заголовку (Windows) }
 { На Windows читаем PE-заголовок через TFileStream.
   Typed-file API (Reset/BlockRead) подвержен WoW64 File System Redirector,
   из-за чего 32-битный процесс не может честно открыть файлы из System32.
@@ -91,35 +90,117 @@ begin
 end;
 
 {$ELSE}
+  {$IFDEF COCOA}
+  //{$IF DEFINED(DARWIN) OR DEFINED(LCLCocoa)}
+  { функция определения битности Mach-O / Fat binary (macOS / Cocoa) }
+  { Magic читается побайтово — независимо от endianness CPU.               }
+  { Форматы (первые 4 байта файла):                                        }
+  {   FE ED FA CE = Mach-O 32-bit big-endian                               }
+  {   CE FA ED FE = Mach-O 32-bit little-endian  (x86, arm)                }
+  {   FE ED FA CF = Mach-O 64-bit big-endian                               }
+  {   CF FA ED FE = Mach-O 64-bit little-endian  (x86_64, arm64)           }
+  {   CA FE BA BE = Fat / Universal binary        (big-endian заголовок)   }
+  function GetLibBitness(const APath: string): TLibBitness;
+  var
+    FS: TFileStream;
+    { Magic читается как байтовый массив вместо LongWord,         }
+    {   чтобы сравнение работало корректно на любом endianness CPU         }
+    B: array[0..3] of Byte;
+    FatCount: LongWord;
+    i: Integer;
+    CpuType: LongWord;
+    Has32, Has64: Boolean;
 
-{ ADDED: функция определения битности библиотеки по ELF-заголовку (Linux/macOS) }
-{ На Linux/macOS читаем ELF-заголовок через TFileStream }
-function GetLibBitness(const APath: string): TLibBitness;
-var
-  FS: TFileStream;
-  ELFIdent: array[0..4] of Byte;
-begin
-  Result := lbUnknown;
-  try
-    FS := TFileStream.Create(APath, fmOpenRead or fmShareDenyNone);
-    try
-      if FS.Read(ELFIdent, SizeOf(ELFIdent)) < 5 then Exit;
-
-      { Проверяем ELF-магию: 0x7F 'E' 'L' 'F' }
-      if (ELFIdent[0] <> $7F) or (ELFIdent[1] <> $45)
-      or (ELFIdent[2] <> $4C) or (ELFIdent[3] <> $46) then Exit;
-
-      { EI_CLASS: 1 = 32-бит, 2 = 64-бит }
-      case ELFIdent[4] of
-        1: Result := lb32bit;
-        2: Result := lb64bit;
-      end;
-    finally
-      FS.Free;
+    { Читает 4 байта в big-endian порядке из текущей позиции потока }
+    function ReadBE32: LongWord;
+    var R: array[0..3] of Byte;
+    begin
+      FS.Read(R, 4);
+      Result := (LongWord(R[0]) shl 24) or (LongWord(R[1]) shl 16)
+              or (LongWord(R[2]) shl 8) or R[3];
     end;
-  except
+
+  begin
+    Result := lbUnknown;
+    try
+      FS := TFileStream.Create(APath, fmOpenRead or fmShareDenyNone);
+      try
+        if FS.Size < 4 then Exit;
+        FS.Read(B, 4);
+
+        { --- Mach-O 32-bit --- }
+        if ((B[0]=$FE) and (B[1]=$ED) and (B[2]=$FA) and (B[3]=$CE))   { big-endian    }
+        or ((B[0]=$CE) and (B[1]=$FA) and (B[2]=$ED) and (B[3]=$FE))   { little-endian }
+        then
+          Result := lb32bit
+
+        { --- Mach-O 64-bit --- }
+        else if ((B[0]=$FE) and (B[1]=$ED) and (B[2]=$FA) and (B[3]=$CF))  { big-endian    }
+             or ((B[0]=$CF) and (B[1]=$FA) and (B[2]=$ED) and (B[3]=$FE))  { little-endian }
+        then
+          Result := lb64bit
+
+        { --- Fat / Universal binary: CA FE BA BE --- }
+        else if (B[0]=$CA) and (B[1]=$FE) and (B[2]=$BA) and (B[3]=$BE) then
+          begin
+            { Fat-заголовок полностью big-endian.
+              После magic(4): nfat_arch(4), затем nfat_arch записей fat_arch.
+              fat_arch: cpu_type(4) cpu_subtype(4) offset(4) size(4) align(4) = 20 байт }
+            FatCount := ReadBE32;
+            Has32 := False;
+            Has64 := False;
+            for i := 0 to Integer(FatCount) - 1 do
+            begin
+              CpuType := ReadBE32;    { cpu_type                                      }
+              FS.Seek(16, soCurrent); { cpu_subtype(4) + offset(4) + size(4) + align(4) }
+              case CpuType of
+                $00000007, $0000000C: Has32 := True;  { x86 / ARM      }
+                $01000007, $0100000C: Has64 := True;  { x86_64 / ARM64 }
+              end;
+            end;
+            if Has64 and Has32 then
+              Result := lbFat
+            else if Has64 then
+              Result := lb64bit
+            else if Has32 then
+              Result := lb32bit;
+          end;
+
+      finally
+        FS.Free;
+      end;
+    except
+    end;
   end;
-end;
+  {$ELSE}
+  { На Linux читаем ELF-заголовок через TFileStream }
+  function GetLibBitness(const APath: string): TLibBitness;
+  var
+    FS: TFileStream;
+    ELFIdent: array[0..4] of Byte;
+  begin
+    Result := lbUnknown;
+    try
+      FS := TFileStream.Create(APath, fmOpenRead or fmShareDenyNone);
+      try
+        if FS.Read(ELFIdent, SizeOf(ELFIdent)) < 5 then Exit;
+
+        { Проверяем ELF-магию: 0x7F 'E' 'L' 'F' }
+        if (ELFIdent[0] <> $7F) or (ELFIdent[1] <> $45)
+        or (ELFIdent[2] <> $4C) or (ELFIdent[3] <> $46) then Exit;
+
+        { EI_CLASS: 1 = 32-бит, 2 = 64-бит }
+        case ELFIdent[4] of
+          1: Result := lb32bit;
+          2: Result := lb64bit;
+        end;
+      finally
+        FS.Free;
+      end;
+    except
+    end;
+  end;
+  {$ENDIF}
 
 {$ENDIF}
 
