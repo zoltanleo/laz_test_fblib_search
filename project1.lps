@@ -22,8 +22,9 @@
         <LoadedDesigner Value="True"/>
         <UsageCount Value="27"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="85"/>
-        <CursorPos X="47" Y="93"/>
+        <TopLine Value="40"/>
+        <CursorPos X="41" Y="212"/>
+        <FoldState Value=" TIg1m1 PjRi61P"/>
       </Unit>
       <Unit>
         <Filename Value="../../lazarus/laz_gtk2/fpcsrc/rtl/objpas/sysutils/dati.inc"/>

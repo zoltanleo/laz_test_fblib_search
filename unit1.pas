@@ -9,7 +9,7 @@ uses
 
 type
   TDBType = (dtFirebird, dtSqlite3);
-  TLibBitness = (lbUnknown, lb32bit, lb64bit);
+  TLibBitness = (lbUnknown, lb32bit, lb64bit, lbFat); {lbFat — Universal/Fat binary (macOS) }
 
   { TForm1 }
 
@@ -90,7 +90,7 @@ begin
 end;
 
 {$ELSE}
-  {$IFDEF COCOA}
+  {$IFDEF LCLCOCOA}
   //{$IF DEFINED(DARWIN) OR DEFINED(LCLCocoa)}
   { функция определения битности Mach-O / Fat binary (macOS / Cocoa) }
   { Magic читается побайтово — независимо от endianness CPU.               }
@@ -209,7 +209,8 @@ begin
   case ABitness of
     lb32bit:   Result := '[32-bit]';
     lb64bit:   Result := '[64-bit]';
-    lbUnknown: Result := '[?-bit] ';
+    lbFat:     Result := '[Fat 32+64] ';
+    lbUnknown: Result := '[?-bit]     ';
   end;
 end;
 
