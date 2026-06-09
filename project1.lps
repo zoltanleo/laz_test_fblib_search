@@ -20,10 +20,10 @@
         <UnitName Value="Unit1"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
-        <UsageCount Value="25"/>
+        <UsageCount Value="26"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="76"/>
-        <CursorPos X="28" Y="87"/>
+        <TopLine Value="115"/>
+        <CursorPos X="72" Y="138"/>
       </Unit>
       <Unit>
         <Filename Value="../../lazarus/laz_gtk2/fpcsrc/rtl/objpas/sysutils/dati.inc"/>

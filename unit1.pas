@@ -9,6 +9,7 @@ uses
 
 type
   TDBType = (dtFirebird, dtSqlite3);
+  TLibBitness = (lbUnknown, lb32bit, lb64bit);
 
   { TForm1 }
 
@@ -36,6 +37,118 @@ implementation
 uses
   FileUtil
   ;
+
+{ *** Определение битности библиотеки *** }
+
+{$IFDEF MSWINDOWS}
+
+{ ADDED: функция определения битности библиотеки по PE-заголовку (Windows) }
+{ На Windows читаем PE-заголовок через TFileStream.
+  Typed-file API (Reset/BlockRead) подвержен WoW64 File System Redirector,
+  из-за чего 32-битный процесс не может честно открыть файлы из System32.
+  TFileStream открывает файл по точному пути без редиректа. }
+function GetLibBitness(const APath: string): TLibBitness;
+var
+  FS: TFileStream;
+  DosHeader: array[0..63] of Byte;
+  PEOffset: LongWord;
+  Machine: Word;
+begin
+  Result := lbUnknown;
+  try
+    FS := TFileStream.Create(APath, fmOpenRead or fmShareDenyNone);
+    try
+      { Читаем DOS-заголовок (64 байта) }
+      if FS.Read(DosHeader, SizeOf(DosHeader)) < 64 then Exit;
+
+      { Проверяем сигнатуру MZ }
+      if (DosHeader[0] <> $4D) or (DosHeader[1] <> $5A) then Exit;
+
+      { e_lfanew по смещению 0x3C — смещение PE-заголовка }
+      PEOffset := DosHeader[$3C]
+               or (DosHeader[$3D] shl 8)
+               or (DosHeader[$3E] shl 16)
+               or (DosHeader[$3F] shl 24);
+
+      { Переходим к IMAGE_FILE_HEADER, пропуская сигнатуру "PE\0\0" (4 байта) }
+      FS.Seek(PEOffset + 4, soBeginning);
+
+      { Читаем поле Machine (первые 2 байта IMAGE_FILE_HEADER) }
+      if FS.Read(Machine, SizeOf(Machine)) < 2 then Exit;
+
+      case Machine of
+        $014C: Result := lb32bit;  { IMAGE_FILE_MACHINE_I386  }
+        $8664: Result := lb64bit;  { IMAGE_FILE_MACHINE_AMD64 }
+        $0200: Result := lb64bit;  { IMAGE_FILE_MACHINE_IA64  }
+        $AA64: Result := lb64bit;  { IMAGE_FILE_MACHINE_ARM64 }
+      end;
+    finally
+      FS.Free;
+    end;
+  except
+    { файл заблокирован, нет прав — оставляем lbUnknown }
+  end;
+end;
+
+{$ELSE}
+
+{ ADDED: функция определения битности библиотеки по ELF-заголовку (Linux/macOS) }
+{ На Linux/macOS читаем ELF-заголовок через TFileStream }
+function GetLibBitness(const APath: string): TLibBitness;
+var
+  FS: TFileStream;
+  ELFIdent: array[0..4] of Byte;
+begin
+  Result := lbUnknown;
+  try
+    FS := TFileStream.Create(APath, fmOpenRead or fmShareDenyNone);
+    try
+      if FS.Read(ELFIdent, SizeOf(ELFIdent)) < 5 then Exit;
+
+      { Проверяем ELF-магию: 0x7F 'E' 'L' 'F' }
+      if (ELFIdent[0] <> $7F) or (ELFIdent[1] <> $45)
+      or (ELFIdent[2] <> $4C) or (ELFIdent[3] <> $46) then Exit;
+
+      { EI_CLASS: 1 = 32-бит, 2 = 64-бит }
+      case ELFIdent[4] of
+        1: Result := lb32bit;
+        2: Result := lb64bit;
+      end;
+    finally
+      FS.Free;
+    end;
+  except
+  end;
+end;
+
+{$ENDIF}
+
+function BitnessLabel(ABitness: TLibBitness): string;
+begin
+  case ABitness of
+    lb32bit:   Result := '[32-bit]';
+    lb64bit:   Result := '[64-bit]';
+    lbUnknown: Result := '[?-bit] ';
+  end;
+end;
+
+{ *** Добавление строк с битностью *** }
+
+{ Для каждой найденной библиотеки в FL определяет битность
+  и добавляет в Memo строки вида: "/usr/lib64/libfbclient.so.2 [64-bit]" }
+procedure AddLibsWithBitness(AMemo: TMemo; FL: TStringList);
+var
+  j: Integer;
+  Bitness: TLibBitness;
+  Line: string;
+begin
+  for j := 0 to FL.Count - 1 do
+  begin
+    Bitness := GetLibBitness(FL[j]);
+    Line := Format('%s %s',[FL[j], BitnessLabel(Bitness)]);
+    AMemo.Lines.Add(Line);
+  end;
+end;
 
 { Пути поиска по платформам }
 
@@ -139,7 +252,8 @@ begin
         begin
           FL.Clear;
           FindAllFiles(FL, Paths[i], Masks[k], True);
-          Memo1.Lines.AddStrings(FL);
+          //Memo1.Lines.AddStrings(FL);
+          AddLibsWithBitness(Memo1, FL);
         end;
 
       Memo1.Lines.Add(Format('=== закончено: %s ===', [FormatDateTime('hh.nn.ss.zzz dd.mm.yyyy', Now)]));
